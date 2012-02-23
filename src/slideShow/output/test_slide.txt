@@ -1,0 +1,4 @@
+Yippee, we get to see how AJAX works.
+We put the content here, wrapped with <pre> </pre>
+so it looks pretty.
+You could put anything you wanted in here.

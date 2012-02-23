@@ -1,0 +1,25 @@
+<scxml xmlns="http://www.w3.org/2005/07/scxml" initial="greeting" >
+  
+	<script>
+    import test
+    </script>       
+       
+    <state id="greeting">
+    	<onentry>
+    		<log expr="test.greeting()" />
+    	</onentry>
+    	<transition target="contest" />
+    </state>
+
+	<state id="contest">
+		<onentry><log label="hello" expr="'bye'" /></onentry>
+    	<transition event="nice" target="stop" />
+    </state>
+	
+	<state id="stop">
+    	<transition event="restart" target="greeting" />
+    </state>
+	
+    
+</scxml>
+
