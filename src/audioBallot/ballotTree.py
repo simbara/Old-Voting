@@ -8,6 +8,7 @@ class Contest(object):
     def __init__(self, name):
         self.name = name 
         self.selectionList = [] #candidates
+        self.userSelection = []
 
 class Candidate(object):
     def __init__(self, inName):
