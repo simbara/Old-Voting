@@ -5,15 +5,17 @@ from pyjamas import Window
 
 race = ParseModule.initTree()
 
-def goToNextState(obj, pos, okToAdvance=True):
+def goToNextState(obj, pos, okToAdvance=True, contestPos=None):
     if fsm.current == 'contests':
+        #print 'LOOK: current is contests, obj is ', obj, 'pos is ', pos, 'contestPos is ', contestPos
         fsm.selectContest(race=obj, contestPos=pos)
     elif fsm.current == 'candidates':
-        # choice: user's selection
-        fsm.reviewCandidates(choice=obj, pos=pos)
+        #print 'LOOK: current is candidates, obj is ', obj, 'pos is ', pos, 'contestPos is ', contestPos
+        fsm.reviewCandidates(choice=obj, pos=pos, contestPos=contestPos)
     elif fsm.current == 'review_candidates':
         if not okToAdvance:
-            fsm.reselectCandidates(race=obj, contestPos=pos) #TODO
+            #print 'LOOK: current is review_candidates, obj is ', obj, 'pos is ', pos, 'contestPos is', contestPos
+            fsm.reselectCandidates(race=obj, contestPos=contestPos)
         else:
             fsm.doneReview()
     elif fsm.current == 'check_done':
@@ -29,22 +31,28 @@ Traverse the list as provided by the 'obj', which can be either of type Race or 
 If the 'store' argument is true, we are not only traversing a Contest's Candidates, we want to store
 whatever selection the user made in the 'Contest.userSelection' list
 '''
-def traverselist(obj, store=False):
+def traverselist(obj, contestPos=None):
     alist = obj.selectionList
     pos = 0
+    print '*', alist[pos].name, 'highlighted *'
     while 1:
-        nb = raw_input('Please select one: ')
-        if nb.strip() == 'h':
+        nb = raw_input('\'y\' up, \'n\' down, \'h\' selects: ')
+        if nb.strip() == 'y':
             pos = (pos+1) if (pos+1<len(alist)) else 0
-        elif nb.strip() == 'y':
-            pos
+        #elif nb.strip() == 'y':
+        #    pos
         elif nb.strip() == 'n':
             pos = len(alist)-1 if (pos-1<0) else pos-1
-        
-        if store == True:
-            obj.userSelection.append(pos)
-        goToNextState(alist[pos], pos)
-        break
+        elif nb.strip() == 'h':
+            break;
+        print '\t*', alist[pos].name, 'highlighted *'
+
+    if fsm.current == 'candidates':
+        #print 'CANDIDATES LOOK: obj is', obj.name, 'pos is ', pos, 'contestPos is ', contestPos
+        goToNextState(obj, pos, contestPos=contestPos)
+    else:
+        #print 'DEFAULT GOTO, obj is', alist[pos], 'pos is ', pos, 'contestPos is ', contestPos
+        goToNextState(alist[pos], pos, contestPos=contestPos)
 
 '''
 Define State Behaviors
@@ -65,33 +73,39 @@ def oncontests(e):
 def oncandidates(e): 
     print '\nCurrent race is: ', e.race.name
     print 'Candidates are:'
-    currContest = race.selectionList[e.contestPos] #todo
+    currContest = race.selectionList[e.contestPos]
     for i, person in zip(range(len(currContest.selectionList)), currContest.selectionList):
         print "\t" + str(i+1) + ') ' + person.name
-    traverselist(currContest, store=True)
-    
-    #currContest.userSelection.append(choice)
-    #print 'size is ', len(currContest.userSelection)
-    #print 'you chose ', currContest.selectionList[currContest.userSelection[0]].name, "????"
+    traverselist(currContest, contestPos=e.contestPos)
 
-#e.pos: the user's selection in the position of the list
+# e.pos: the user's selection in the position of the list
 def onreviewcandidates(e):
     print '\nReview Your Choice for', e.choice.name, ':'
-    candidate = e.choice
-    selection = e.pos
+    candidate = e.choice.selectionList[e.pos]
     print '\t', candidate.name
-    print 'CHECK: POS IS ', selection
     
+    # even: yes, odd: no
+    currChoice = 0
+    print '* <YES> highlighted *'
     while 1:
-        nb = raw_input('Is this your choice? ')
+        nb = raw_input('\'y\' up, \'n\' down, \'h\' selects: ')
         if nb.strip() == 'y':
-            #goToNextState(candidate, selection)
-            goToNextState(None, None)
-            break
+            currChoice += 1
+        elif nb.strip() == 'n':
+            currChoice -= 1
+        elif nb.strip() == 'h':
+            break;
+        if currChoice % 2 == 0:
+            print '\t* <YES> highlighted *'
         else:
-            #goToNextState(candidate, selection, False)
-            goToNextState(candidate, None, False) # TODO PROBLEM
-            break
+            print '\t* <NO> highlighted *'
+        
+    if currChoice % 2 == 0:
+        e.choice.userSelection[:] = []
+        e.choice.userSelection.append(e.pos)
+        goToNextState(None, None, okToAdvance=True)
+    else:
+        goToNextState(e.choice, e.pos, contestPos=e.contestPos)
 
 def oncheckdone(e):
     for i, contest in zip(range(len(race.selectionList)), race.selectionList):
