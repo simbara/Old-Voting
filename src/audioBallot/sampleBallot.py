@@ -1,12 +1,10 @@
 import pyttsx
 from fysom import Fysom
 import ParseModule
-#from pyjamas import Window
-
 
 engine = pyttsx.init()
 race = ParseModule.initTree()
-
+    
 def tts(text):
     engine.stop()
     print text
@@ -48,15 +46,15 @@ def traverselist(obj, contestPos=None):
     pos = 0
     tts('* ' + alist[pos].name + ' highlighted *')
     while 1:
-        nb = raw_input('\'y\' up, \'n\' down, \'h\' selects: ')
+        kb = raw_input('\'y\' up, \'n\' down, \'h\' selects: ')
         #if fsm.current == 'contests':
-        #    if nb.strip() == 'g':
+        #    if kb.strip() == 'g':
         #else:
-        if nb.strip() == 'y':
+        if kb.strip() == 'y':
             pos = (pos+1) if (pos+1<len(alist)) else 0
-        elif nb.strip() == 'n':
+        elif kb.strip() == 'n':
             pos = len(alist)-1 if (pos-1<0) else pos-1
-        elif nb.strip() == 'h':
+        elif kb.strip() == 'h':
             break;    
         tts('* ' + alist[pos].name + ' highlighted *')
 
@@ -100,12 +98,12 @@ def onreviewcandidates(e):
     currChoice = 0
     tts('* <YES> highlighted *')
     while 1:
-        nb = raw_input('\'y\' up, \'n\' down, \'h\' selects: ')
-        if nb.strip() == 'y':
+        kb = raw_input('\'y\' up, \'n\' down, \'h\' selects: ')
+        if kb.strip() == 'y':
             currChoice += 1
-        elif nb.strip() == 'n':
+        elif kb.strip() == 'n':
             currChoice -= 1
-        elif nb.strip() == 'h':
+        elif kb.strip() == 'h':
             tts("\t* CONFIRMED")
             break;
         if currChoice % 2 == 0:
@@ -136,12 +134,12 @@ def onreviewballot(e):
     currChoice = 0
     tts('* <YES> highlighted *')
     while 1:
-        nb = raw_input('\'y\' up, \'n\' down, \'h\' selects: ')
-        if nb.strip() == 'y':
+        kb = raw_input('\'y\' up, \'n\' down, \'h\' selects: ')
+        if kb.strip() == 'y':
             currChoice += 1
-        elif nb.strip() == 'n':
+        elif kb.strip() == 'n':
             currChoice -= 1
-        elif nb.strip() == 'h':
+        elif kb.strip() == 'h':
             tts("\t* CONFIRMED")
             break;
         if currChoice % 2 == 0:
