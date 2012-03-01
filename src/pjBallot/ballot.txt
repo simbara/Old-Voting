@@ -1,0 +1,10 @@
+Race: 2012 Voting Thing : Please select which candidate you want with the up/down/left/right keys
+Contest: President of the United States
+Candidate: Barack Obama
+candidate:Mitt Romney
+candidate:Newt Gingrich
+
+Contest: Vice President of the United States
+Candidate: Hillary Clinton
+candidate: Biden 
+candidate:Newt Gingrich

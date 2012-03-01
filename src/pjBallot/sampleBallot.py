@@ -1,8 +1,9 @@
 from fysom import Fysom
 import ParseModule
+from pyjamas.JSONService import JSONProxy
+
 
 race = ParseModule.initTree()
-
 
 def goToNextState(obj, pos, okToAdvance=True):
     if fsm.current == 'contests':

@@ -28,12 +28,12 @@ class Parser:
 
 
 def initTree():
-    p = Parser("/Users/Rahul/Documents/eclipse/Python/Voting/src/audioBallot/ballot.txt")
+    p = Parser('/Users/Rahul/Documents/eclipse/Python/Voting/src/pjBallot/ballot.txt')
     race = p.parse()
     return race
 
 def testTree():   
-    p = Parser("/Users/Rahul/Documents/eclipse/Python/Voting/src/audioBallot/ballot.txt")
+    p = Parser("/Users/Rahul/Documents/eclipse/Python/Voting/src/pjBallot/ballot.txt")
     race = p.parse()
     print "Race:", race.name, ", Instructions:", race.instructions
     for contest in race.selectionList:
