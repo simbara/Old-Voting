@@ -1,50 +1,71 @@
+import pyttsx
 from fysom import Fysom
 import ParseModule
-from pyjamas.JSONService import JSONProxy
+#from pyjamas import Window
 
 
+engine = pyttsx.init()
 race = ParseModule.initTree()
 
-def goToNextState(obj, pos, okToAdvance=True):
+def tts(text):
+    engine.stop()
+    print text
+    engine.say(text)
+    engine.runAndWait()
+
+def goToNextState(obj, pos, okToAdvance=True, contestPos=None):
     if fsm.current == 'contests':
+        #print 'LOOK: current is contests, obj is ', obj, 'pos is ', pos, 'contestPos is ', contestPos
         fsm.selectContest(race=obj, contestPos=pos)
     elif fsm.current == 'candidates':
-        # choice: user's selection
-        fsm.reviewCandidates(choice=obj, pos=pos)
+        #print 'LOOK: current is candidates, obj is ', obj, 'pos is ', pos, 'contestPos is ', contestPos
+        fsm.reviewCandidates(choice=obj, pos=pos, contestPos=contestPos)
     elif fsm.current == 'review_candidates':
         if not okToAdvance:
-            fsm.reselectCandidates(race=obj, contestPos=pos) #TODO
+            #print 'LOOK: current is review_candidates, obj is ', obj, 'pos is ', pos, 'contestPos is', contestPos
+            fsm.reselectCandidates(race=obj, contestPos=contestPos)
         else:
             fsm.doneReview()
     elif fsm.current == 'check_done':
         if obj is not None:
             fsm.nextContest(race=obj, pos=pos)
         else:
-            fsm.reviewBallot()
+            fsm.reviewBallot(race=obj, pos=pos)
     elif fsm.current == 'review_ballot':
-        fsm.doneBallot()
+        if okToAdvance:
+            fsm.doneBallot()
+        else:
+            fsm.reselectContest() #TODO
+        
         
 '''
 Traverse the list as provided by the 'obj', which can be either of type Race or Contest
 If the 'store' argument is true, we are not only traversing a Contest's Candidates, we want to store
 whatever selection the user made in the 'Contest.userSelection' list
 '''
-def traverselist(obj, store=False):
+def traverselist(obj, contestPos=None):
     alist = obj.selectionList
     pos = 0
+    tts('* ' + alist[pos].name + ' highlighted *')
     while 1:
-        nb = raw_input('Please select one: ')
-        if nb.strip() == 'h':
+        nb = raw_input('\'y\' up, \'n\' down, \'h\' selects: ')
+        #if fsm.current == 'contests':
+        #    if nb.strip() == 'g':
+        #else:
+        if nb.strip() == 'y':
             pos = (pos+1) if (pos+1<len(alist)) else 0
-        elif nb.strip() == 'y':
-            pos
         elif nb.strip() == 'n':
             pos = len(alist)-1 if (pos-1<0) else pos-1
-        
-        if store == True:
-            obj.userSelection.append(pos)
-        goToNextState(alist[pos], pos)
-        break
+        elif nb.strip() == 'h':
+            break;    
+        tts('* ' + alist[pos].name + ' highlighted *')
+
+    if fsm.current == 'candidates':
+        #print 'CANDIDATES LOOK: obj is', obj.name, 'pos is ', pos, 'contestPos is ', contestPos
+        goToNextState(obj, pos, contestPos=contestPos)
+    else:
+        #print 'DEFAULT GOTO, obj is', alist[pos], 'pos is ', pos, 'contestPos is ', contestPos
+        goToNextState(alist[pos], pos, contestPos=contestPos)
 
 '''
 Define State Behaviors
@@ -56,42 +77,48 @@ def onintro(e):
     print 'hello!'
     
 def oncontests(e): 
-    print '\nThe contests are:'
+    tts('\nThe contests are:')
     for i, contest in zip(range(len(race.selectionList)), race.selectionList):
-        print '\t' + str(i+1) + ') ' + contest.name 
+        tts('\t' + str(i+1) + ') ' + contest.name) 
     traverselist(race)
 
 # e.pos: the current Contest, which is the position in the race.selectionList
 def oncandidates(e): 
-    print '\nCurrent race is: ', e.race.name
-    print 'Candidates are:'
-    currContest = race.selectionList[e.contestPos] #todo
+    tts('\nCurrent race is: ' + e.race.name)
+    tts('Candidates are:')
+    currContest = race.selectionList[e.contestPos]
     for i, person in zip(range(len(currContest.selectionList)), currContest.selectionList):
-        print "\t" + str(i+1) + ') ' + person.name
-    traverselist(currContest, store=True)
-    
-    #currContest.userSelection.append(choice)
-    #print 'size is ', len(currContest.userSelection)
-    #print 'you chose ', currContest.selectionList[currContest.userSelection[0]].name, "????"
+        tts("\t" + str(i+1) + ') ' + person.name)
+    traverselist(currContest, contestPos=e.contestPos)
 
-#e.pos: the user's selection in the position of the list
+# e.pos: the user's selection in the position of the list
 def onreviewcandidates(e):
-    print '\nReview Your Choice for', e.choice.name, ':'
-    candidate = e.choice
-    selection = e.pos
-    print '\t', candidate.name
-    print 'CHECK: POS IS ', selection
+    tts('\nReview Your Choice for ' + e.choice.name + ':')
+    candidate = e.choice.selectionList[e.pos]
+    tts('\t' + candidate.name)
     
+    currChoice = 0
+    tts('* <YES> highlighted *')
     while 1:
-        nb = raw_input('Is this your choice? ')
+        nb = raw_input('\'y\' up, \'n\' down, \'h\' selects: ')
         if nb.strip() == 'y':
-            #goToNextState(candidate, selection)
-            goToNextState(None, None)
-            break
+            currChoice += 1
+        elif nb.strip() == 'n':
+            currChoice -= 1
+        elif nb.strip() == 'h':
+            tts("\t* CONFIRMED")
+            break;
+        if currChoice % 2 == 0:
+            tts('\t* <YES> highlighted *')
         else:
-            #goToNextState(candidate, selection, False)
-            goToNextState(candidate, None, False) # TODO PROBLEM
-            break
+            tts('\t* <NO> highlighted *')
+        
+    if currChoice % 2 == 0:
+        e.choice.userSelection[:] = []
+        e.choice.userSelection.append(e.pos)
+        goToNextState(None, None, okToAdvance=True)
+    else:
+        goToNextState(e.choice, e.pos, contestPos=e.contestPos, okToAdvance=False)
 
 def oncheckdone(e):
     for i, contest in zip(range(len(race.selectionList)), race.selectionList):
@@ -100,14 +127,36 @@ def oncheckdone(e):
             return
     goToNextState(None, None)
 
+# fsm.reviewBallot(race=obj, pos=pos)
 def onreviewballot(e):
-    print '\nReview your selections:'
+    tts('\nReview your selections:')
     for contest in race.selectionList:
-        print 'Contest: ', contest.name, ':', contest.selectionList[contest.userSelection[0]].name
-    goToNextState(None, None)
+        tts(contest.name + ':' + contest.selectionList[contest.userSelection[0]].name)
+        
+    currChoice = 0
+    tts('* <YES> highlighted *')
+    while 1:
+        nb = raw_input('\'y\' up, \'n\' down, \'h\' selects: ')
+        if nb.strip() == 'y':
+            currChoice += 1
+        elif nb.strip() == 'n':
+            currChoice -= 1
+        elif nb.strip() == 'h':
+            tts("\t* CONFIRMED")
+            break;
+        if currChoice % 2 == 0:
+            tts('\t* <YES> highlighted *')
+        else:
+            tts('\t* <NO> highlighted *')
+        
+    if currChoice % 2 == 0:
+        goToNextState(None, None)
+    else:
+        goToNextState(e.race, e.pos, okToAdvance=False) # TODO
+    
     
 def ondoneballot(e):
-    print '\nVoting complete! Thanks for using this system!'
+    tts('\nVoting complete! Thanks for using this system!')
 
 '''
 States and Events
@@ -121,7 +170,9 @@ fsm = Fysom({
     {'name': 'reselectCandidates', 'src': 'review_candidates', 'dst': 'candidates'},
     {'name': 'doneReview',  'src': 'review_candidates',   'dst': 'check_done'},
     {'name': 'nextContest', 'src': 'check_done',  'dst': 'contests'},
+    {'name': 'otherContest', 'src': 'contests',  'dst': 'contests'}, # TODO
     {'name': 'reviewBallot', 'src': 'check_done', 'dst': 'review_ballot'},
+    {'name': 'reselectContest', 'src': 'review_ballot', 'dst': 'contests'}, # TODO
     {'name': 'doneBallot', 'src': 'review_ballot', 'dst': 'done_ballot'},    
   ],
     'callbacks': {
@@ -135,10 +186,10 @@ fsm = Fysom({
     }
 })
 
+
 '''
 Assign State Behaviors
 '''
 #fsm.onchangestate = printstatechange
 
-#if __name__ == '__main_':
-#    fsm.startVoting()
+fsm.startVoting()
