@@ -10,5 +10,6 @@
 <pydev_pathproperty name="org.python.pydev.PROJECT_EXTERNAL_SOURCE_PATH">
 <path>/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages/pyttsx-1.0.egg</path>
 <path>/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages</path>
+<path>/DevKits/pyjamas-0.8alpha1</path>
 </pydev_pathproperty>
 </pydev_project>
