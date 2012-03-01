@@ -1,17 +1,17 @@
-#import pyprintx
+import pyttsx
 from fysom import Fysom
 import ParseModule
 #from pyjamas import Window
 
 
-#engine = pyprintx.init()
+engine = pyttsx.init()
 race = ParseModule.initTree()
 
-#def print(text):
-#    engine.stop()
-#    print text
-#    engine.say(text)
-#    engine.runAndWait()
+def tts(text):
+    engine.stop()
+    print text
+    engine.say(text)
+    engine.runAndWait()
 
 def goToNextState(obj, pos, okToAdvance=True, contestPos=None):
     if fsm.current == 'contests':
@@ -46,7 +46,7 @@ whatever selection the user made in the 'Contest.userSelection' list
 def traverselist(obj, contestPos=None):
     alist = obj.selectionList
     pos = 0
-    print('* ' + alist[pos].name + ' highlighted *')
+    tts('* ' + alist[pos].name + ' highlighted *')
     while 1:
         nb = raw_input('\'y\' up, \'n\' down, \'h\' selects: ')
         #if fsm.current == 'contests':
@@ -58,7 +58,7 @@ def traverselist(obj, contestPos=None):
             pos = len(alist)-1 if (pos-1<0) else pos-1
         elif nb.strip() == 'h':
             break;    
-        print('* ' + alist[pos].name + ' highlighted *')
+        tts('* ' + alist[pos].name + ' highlighted *')
 
     if fsm.current == 'candidates':
         #print 'CANDIDATES LOOK: obj is', obj.name, 'pos is ', pos, 'contestPos is ', contestPos
@@ -77,28 +77,28 @@ def onintro(e):
     print 'hello!'
     
 def oncontests(e): 
-    print('\nThe contests are:')
+    tts('\nThe contests are:')
     for i, contest in zip(range(len(race.selectionList)), race.selectionList):
-        print('\t' + str(i+1) + ') ' + contest.name) 
+        tts('\t' + str(i+1) + ') ' + contest.name) 
     traverselist(race)
 
 # e.pos: the current Contest, which is the position in the race.selectionList
 def oncandidates(e): 
-    print('\nCurrent race is: ' + e.race.name)
-    print('Candidates are:')
+    tts('\nCurrent race is: ' + e.race.name)
+    tts('Candidates are:')
     currContest = race.selectionList[e.contestPos]
     for i, person in zip(range(len(currContest.selectionList)), currContest.selectionList):
-        print("\t" + str(i+1) + ') ' + person.name)
+        tts("\t" + str(i+1) + ') ' + person.name)
     traverselist(currContest, contestPos=e.contestPos)
 
 # e.pos: the user's selection in the position of the list
 def onreviewcandidates(e):
-    print('\nReview Your Choice for ' + e.choice.name + ':')
+    tts('\nReview Your Choice for ' + e.choice.name + ':')
     candidate = e.choice.selectionList[e.pos]
-    print('\t' + candidate.name)
+    tts('\t' + candidate.name)
     
     currChoice = 0
-    print('* <YES> highlighted *')
+    tts('* <YES> highlighted *')
     while 1:
         nb = raw_input('\'y\' up, \'n\' down, \'h\' selects: ')
         if nb.strip() == 'y':
@@ -106,12 +106,12 @@ def onreviewcandidates(e):
         elif nb.strip() == 'n':
             currChoice -= 1
         elif nb.strip() == 'h':
-            print("\t* CONFIRMED")
+            tts("\t* CONFIRMED")
             break;
         if currChoice % 2 == 0:
-            print('\t* <YES> highlighted *')
+            tts('\t* <YES> highlighted *')
         else:
-            print('\t* <NO> highlighted *')
+            tts('\t* <NO> highlighted *')
         
     if currChoice % 2 == 0:
         e.choice.userSelection[:] = []
@@ -129,12 +129,12 @@ def oncheckdone(e):
 
 # fsm.reviewBallot(race=obj, pos=pos)
 def onreviewballot(e):
-    print('\nReview your selections:')
+    tts('\nReview your selections:')
     for contest in race.selectionList:
-        print(contest.name + ':' + contest.selectionList[contest.userSelection[0]].name)
+        tts(contest.name + ':' + contest.selectionList[contest.userSelection[0]].name)
         
     currChoice = 0
-    print('* <YES> highlighted *')
+    tts('* <YES> highlighted *')
     while 1:
         nb = raw_input('\'y\' up, \'n\' down, \'h\' selects: ')
         if nb.strip() == 'y':
@@ -142,12 +142,12 @@ def onreviewballot(e):
         elif nb.strip() == 'n':
             currChoice -= 1
         elif nb.strip() == 'h':
-            print("\t* CONFIRMED")
+            tts("\t* CONFIRMED")
             break;
         if currChoice % 2 == 0:
-            print('\t* <YES> highlighted *')
+            tts('\t* <YES> highlighted *')
         else:
-            print('\t* <NO> highlighted *')
+            tts('\t* <NO> highlighted *')
         
     if currChoice % 2 == 0:
         goToNextState(None, None)
@@ -156,7 +156,7 @@ def onreviewballot(e):
     
     
 def ondoneballot(e):
-    print('\nVoting complete! Thanks for using this system!')
+    tts('\nVoting complete! Thanks for using this system!')
 
 '''
 States and Events

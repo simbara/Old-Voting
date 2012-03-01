@@ -16,7 +16,7 @@ class Parser:
             mRace = self.pRace.match(line)
             mContest = self.pContest.match(line)
             if mRace:
-                race = Race(mRace.group(1), mRace.group(2))
+                race = Race(mRace.group(1), [], mRace.group(2))
                 self.races.append(race)
             elif mContest:
                 contest = Contest(mContest.group(1))
